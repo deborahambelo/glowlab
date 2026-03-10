@@ -45,6 +45,7 @@ export function Skincare() {
       </div>
 
       <div
+        className="skincare-grid"
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(3,1fr)",

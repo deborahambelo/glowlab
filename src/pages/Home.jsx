@@ -6,6 +6,7 @@ export function Home() {
   return (
     <div className="fade-up">
       <div
+        className="home-hero-grid"
         style={{
           padding: "80px 0 64px",
           display: "grid",
@@ -151,6 +152,7 @@ export function Home() {
       </div>
 
       <div
+        className="home-stats-grid"
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(4,1fr)",
@@ -196,6 +198,7 @@ export function Home() {
       </div>
 
       <div
+        className="home-cta-grid"
         style={{
           display: "grid",
           gridTemplateColumns: "1fr 1fr",

@@ -302,3 +302,160 @@ input:focus {
   margin-bottom: 6px;
 }
 
+/* ─── Responsive tweaks ─────────────────────────────────────────────── */
+
+/* 1. Desktop Default (Base Styles) */
+.main-nav-links,
+.main-nav-right {
+  display: flex !important;
+  flex-direction: row;
+  gap: 16px;
+}
+
+.nav-hamburger {
+  display: none !important;
+}
+
+/* 2. Mobile Overrides */
+@media (max-width: 768px) {
+  .nav-hamburger {
+    display: block !important;
+    background: none;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    margin-left: auto;
+  }
+
+  /* Hide links by default on mobile */
+  .main-nav-links,
+  .main-nav-right {
+    display: none !important;
+  }
+
+  /* Show and stack links when menu is open */
+  .nav-mobile-open .main-nav-links,
+  .nav-mobile-open .main-nav-right {
+    display: flex !important;
+    flex-direction: column;
+    width: 100%;
+    margin-top: 8px;
+    overflow-x: auto;
+  }
+
+  .main-nav-inner {
+    padding: 10px 16px !important;
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  /* Grid adjustments for mobile */
+  .home-hero-grid,
+  .home-cta-grid,
+  .skincare-grid {
+    grid-template-columns: 1fr !important;
+    gap: 32px !important;
+  }
+
+  .home-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  h1 {
+    font-size: 1.8rem;
+  }
+  h2 {
+    font-size: 1.4rem;
+  }
+  p {
+    font-size: 0.94rem;
+  }
+}
+
+/* Only show when the class exists */
+@media (max-width: 768px) {
+  .nav-mobile-open .main-nav-links,
+  .nav-mobile-open .main-nav-right {
+    display: flex !important;
+    flex-direction: column;
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  /* navbar + menu */
+  .main-nav-inner {
+    padding: 10px 16px !important;
+  }
+
+  .nav-hamburger {
+    display: block;
+    background: none;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    margin-left: auto;
+  }
+
+  .main-nav-links,
+  .main-nav-right {
+    display: none;
+  }
+
+  .nav-mobile-open {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .nav-mobile-open .main-nav-links,
+  .nav-mobile-open .main-nav-right {
+    display: flex;
+    width: 100%;
+    margin-top: 8px;
+  }
+
+  .main-nav-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* This is fine, but it needs to be managed */
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 12px 24px;
+    gap: 24px; /* Give them a fixed gap instead of stretching */
+  }
+
+  .nav-mobile-open .main-nav-links {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .home-hero-grid {
+    grid-template-columns: 1fr !important;
+    gap: 32px !important;
+  }
+
+  .home-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .home-cta-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .skincare-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* general typography + spacing */
+  h1 {
+    font-size: 1.8rem;
+  }
+
+  h2 {
+    font-size: 1.4rem;
+  }
+
+  p {
+    font-size: 0.94rem;
+  }
+}
