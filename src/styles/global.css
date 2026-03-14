@@ -280,6 +280,7 @@ input:focus {
   text-transform: uppercase;
   color: #9ca3af;
   margin-bottom: 10px;
+  margin-top: 20px;
 }
 
 .divider {
@@ -302,7 +303,7 @@ input:focus {
   margin-bottom: 6px;
 }
 
-/* ─── Responsive tweaks ─────────────────────────────────────────────── */
+/* ─── Make Responsive ─────────────────────────────────────────────── */
 
 /* 1. Desktop Default (Base Styles) */
 .main-nav-links,
@@ -327,13 +328,11 @@ input:focus {
     margin-left: auto;
   }
 
-  /* Hide links by default on mobile */
   .main-nav-links,
   .main-nav-right {
     display: none !important;
   }
 
-  /* Show and stack links when menu is open */
   .nav-mobile-open .main-nav-links,
   .nav-mobile-open .main-nav-right {
     display: flex !important;
@@ -349,7 +348,6 @@ input:focus {
     align-items: flex-start;
   }
 
-  /* Grid adjustments for mobile */
   .home-hero-grid,
   .home-cta-grid,
   .skincare-grid {
@@ -372,7 +370,6 @@ input:focus {
   }
 }
 
-/* Only show when the class exists */
 @media (max-width: 768px) {
   .nav-mobile-open .main-nav-links,
   .nav-mobile-open .main-nav-right {
@@ -417,11 +414,11 @@ input:focus {
   .main-nav-inner {
     display: flex;
     align-items: center;
-    justify-content: space-between; /* This is fine, but it needs to be managed */
+    justify-content: space-between;
     max-width: 1200px;
     margin: 0 auto;
     padding: 12px 24px;
-    gap: 24px; /* Give them a fixed gap instead of stretching */
+    gap: 24px;
   }
 
   .nav-mobile-open .main-nav-links {
@@ -446,7 +443,6 @@ input:focus {
     grid-template-columns: 1fr !important;
   }
 
-  /* general typography + spacing */
   h1 {
     font-size: 1.8rem;
   }

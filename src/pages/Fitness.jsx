@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
-import { FITNESS_GROUPS } from "../data/fitnessData.js";
 import { useAuth } from "../context/AuthContext.jsx";
 import { AuthModal } from "../components/layout/AuthModal.jsx";
 import { MuscleGroupCard } from "../components/fitness/MuscleGroupCard.jsx";
+import { useFitnessGroups } from "../hooks/useFirestoreCollections.js";
+import { mapFitnessDocsToGroups } from "../utils/dataMapping.js";
 
 export function Fitness() {
   const { muscleId } = useParams();
@@ -11,9 +12,13 @@ export function Fitness() {
   const [expandedEx, setExpandedEx] = useState(null);
   const [showAuth, setShowAuth] = useState(false);
   const { user, workoutPlan, addToWorkout, removeFromWorkout } = useAuth();
+  const { items, loading } = useFitnessGroups();
 
   const activeId = muscleId || localActive;
-  const activeGroup = activeId ? FITNESS_GROUPS[activeId] : null;
+
+  const groupsObj = useMemo(() => mapFitnessDocsToGroups(items || []), [items]);
+  const groups = useMemo(() => Object.values(groupsObj), [groupsObj]);
+  const activeGroup = activeId ? groupsObj[activeId] : null;
 
   return (
     <div className="fade-up" style={{ paddingTop: 52, paddingBottom: 80 }}>
@@ -52,211 +57,273 @@ export function Fitness() {
         </p>
       </div>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(3,1fr)",
-          gap: 10,
-          marginBottom: 36
-        }}
-      >
-        {Object.values(FITNESS_GROUPS).map((group) => (
-          <MuscleGroupCard
-            key={group.id}
-            group={group}
-            isActive={activeId === group.id}
-            onClick={() => {
-              setLocalActive(
-                localActive === group.id && !muscleId ? null : group.id
-              );
-              setExpandedEx(null);
-            }}
-          />
-        ))}
-      </div>
-
-      {activeGroup && (
-        <div className="expand-body" key={activeGroup.id}>
+      {loading ? (
+        <p style={{ fontSize: 13, color: "#9ca3af" }}>Loading groups...</p>
+      ) : groups.length === 0 ? (
+        <p style={{ fontSize: 13, color: "#9ca3af" }}>
+          No fitness groups yet.
+        </p>
+      ) : (
+        <>
           <div
             style={{
-              padding: "18px 22px",
-              background: `${activeGroup.color}10`,
-              borderRadius: 14,
-              border: `1.5px solid ${activeGroup.color}22`,
-              marginBottom: 24,
-              display: "flex",
-              gap: 14,
-              alignItems: "flex-start"
+              display: "grid",
+              gridTemplateColumns: "repeat(3,1fr)",
+              gap: 10,
+              marginBottom: 36,
             }}
           >
-            <span style={{ fontSize: 24, flexShrink: 0 }}>
-              {activeGroup.icon}
-            </span>
-            <div>
-              <div
-                className="label"
-                style={{ color: activeGroup.color, marginBottom: 5 }}
-              >
-                Coach Tip
-              </div>
-              <p
-                style={{
-                  fontSize: 13,
-                  color: "#374151",
-                  lineHeight: 1.65
+            {groups.map((group) => (
+              <MuscleGroupCard
+                key={group.id}
+                group={group}
+                isActive={activeId === group.id}
+                onClick={() => {
+                  setLocalActive(activeId === group.id ? null : group.id);
+                  setExpandedEx(null);
                 }}
-              >
-                {activeGroup.tip}
-              </p>
-            </div>
+              />
+            ))}
           </div>
 
-          <div className="label" style={{ marginBottom: 12 }}>
-            Exercises — {activeGroup.label}
-          </div>
-          {activeGroup.exercises.map((ex, i) => (
-            <div
-              key={ex.name}
-              className="exercise-row"
-              onClick={() =>
-                setExpandedEx(expandedEx === i ? null : i)
-              }
-            >
-              <div>
-                <div
-                  style={{
-                    fontWeight: 600,
-                    fontSize: 14,
-                    color: "#1a1a1a"
-                  }}
-                >
-                  {ex.name}
-                </div>
-                {expandedEx === i && (
+          {activeGroup && (
+            <div className="expand-body" key={activeGroup.id}>
+              <div
+                style={{
+                  padding: "18px 22px",
+                  background: `${activeGroup.color}10`,
+                  borderRadius: 14,
+                  border: `1.5px solid ${activeGroup.color}22`,
+                  marginBottom: 24,
+                  display: "flex",
+                  gap: 14,
+                  alignItems: "flex-start",
+                }}
+              >
+                <span style={{ fontSize: 24, flexShrink: 0 }}>
+                  {activeGroup.icon}
+                </span>
+                <div>
                   <div
+                    className="label"
+                    style={{ color: activeGroup.color, marginBottom: 5 }}
+                  >
+                    Coach Tip
+                  </div>
+                  <p style={{ fontSize: 13, color: "#374151", lineHeight: 1.65 }}>
+                    {activeGroup.tip}
+                  </p>
+                </div>
+              </div>
+
+              <div className="label" style={{ marginBottom: 12 }}>
+                Exercises — {activeGroup.label}
+              </div>
+
+              {(activeGroup.exercises || []).map((ex, i) => (
+                <div
+                  key={`${ex.name}-${i}`}
+                  className="exercise-row"
+                  onClick={() => setExpandedEx(expandedEx === i ? null : i)}
+                >
+                  <div>
+                    <div
+                      style={{ fontWeight: 600, fontSize: 14, color: "#1a1a1a" }}
+                    >
+                      {ex.name}
+                    </div>
+                    {expandedEx === i && (
+                      <div
+                        style={{
+                          fontSize: 12,
+                          color: "#6b7280",
+                          marginTop: 6,
+                          lineHeight: 1.6,
+                          maxWidth: 340,
+                        }}
+                      >
+                        {ex.desc}
+                      </div>
+                    )}
+                  </div>
+                  <span
+                    className="tag"
                     style={{
-                      fontSize: 12,
+                      background: "#f3f4f6",
                       color: "#6b7280",
-                      marginTop: 6,
-                      lineHeight: 1.6,
-                      maxWidth: 340
+                      whiteSpace: "nowrap",
                     }}
                   >
-                    {ex.desc}
+                    {ex.sets} sets
+                  </span>
+                  <span
+                    className="tag"
+                    style={{
+                      background: "#f3f4f6",
+                      color: "#6b7280",
+                      whiteSpace: "nowrap",
+                      fontSize: 11,
+                    }}
+                  >
+                    {ex.reps} reps
+                  </span>
+                  <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                    <span
+                      className="tag"
+                      style={{
+                        background:
+                          ex.level === "Beginner" ? "#ecfdf5" : "#fef3c7",
+                        color: ex.level === "Beginner" ? "#065f46" : "#92400e",
+                        whiteSpace: "nowrap",
+                        fontSize: 10,
+                      }}
+                    >
+                      {ex.level}
+                    </span>
+                    <button
+                      className="btn btn-sm"
+                      style={{
+                        background: activeGroup.color,
+                        color: "white",
+                        whiteSpace: "nowrap",
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (!user) setShowAuth(true);
+                        else addToWorkout(ex.name, activeGroup.label);
+                      }}
+                    >
+                      + Plan
+                    </button>
                   </div>
-                )}
-              </div>
-              <span
-                className="tag"
-                style={{
-                  background: "#f3f4f6",
-                  color: "#6b7280",
-                  whiteSpace: "nowrap"
-                }}
-              >
-                {ex.sets} sets
-              </span>
-              <span
-                className="tag"
-                style={{
-                  background: "#f3f4f6",
-                  color: "#6b7280",
-                  whiteSpace: "nowrap",
-                  fontSize: 11
-                }}
-              >
-                {ex.reps} reps
-              </span>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 7
-                }}
-              >
-                <span
-                  className="tag"
-                  style={{
-                    background:
-                      ex.level === "Beginner" ? "#ecfdf5" : "#fef3c7",
-                    color:
-                      ex.level === "Beginner" ? "#065f46" : "#92400e",
-                    whiteSpace: "nowrap",
-                    fontSize: 10
-                  }}
-                >
-                  {ex.level}
-                </span>
-                <button
-                  className="btn btn-sm"
-                  style={{
-                    background: activeGroup.color,
-                    color: "white",
-                    whiteSpace: "nowrap"
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (!user) setShowAuth(true);
-                    else addToWorkout(ex.name, activeGroup.label);
-                  }}
-                >
-                  + Plan
-                </button>
-              </div>
-            </div>
-          ))}
+                </div>
+              ))}
 
-          {user && workoutPlan.length > 0 && (
-            <div
-              style={{
-                marginTop: 28,
-                padding: "22px",
-                background: "white",
-                borderRadius: 16,
-                border: "1.5px solid #f0ece8"
-              }}
-            >
-              <div className="label" style={{ marginBottom: 12 }}>
-                📋 Your Workout Plan
-              </div>
-              {workoutPlan.map((item) => (
+              {user && workoutPlan.length > 0 && (
                 <div
-                  key={item}
+                  style={{
+                    marginTop: 28,
+                    padding: "22px",
+                    background: "white",
+                    borderRadius: 16,
+                    border: "1.5px solid #f0ece8",
+                  }}
+                >
+                  <div className="label" style={{ marginBottom: 12 }}>
+                    📋 Your Workout Plan
+                  </div>
+                  {workoutPlan.map((item) => (
+                    <div
+                      key={item}
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        padding: "8px 12px",
+                        background: "#fafaf9",
+                        borderRadius: 8,
+                        marginBottom: 4,
+                        fontSize: 13,
+                      }}
+                    >
+                      <span style={{ color: "#374151", fontWeight: 500 }}>
+                        {item}
+                      </span>
+                      <button
+                        style={{
+                          background: "none",
+                          border: "none",
+                          cursor: "pointer",
+                          color: "#9ca3af",
+                          fontSize: 18,
+                          lineHeight: 1,
+                        }}
+                        onClick={() => removeFromWorkout(item)}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </>
+      )}
+
+      <div
+        style={{
+          marginTop: 32,
+          padding: "20px 18px",
+          background: "white",
+          borderRadius: 16,
+          border: "1.5px solid #f0ece8"
+        }}
+      >
+        <div className="label" style={{ marginBottom: 10 }}>
+          Latest Fitness Routines
+        </div>
+        {loading ? (
+          <p style={{ fontSize: 13, color: "#9ca3af" }}>Loading routines...</p>
+        ) : groups.length === 0 ? (
+          <p style={{ fontSize: 13, color: "#9ca3af" }}>
+            No fitness routines yet.
+          </p>
+        ) : (
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(2,1fr)",
+              gap: 12,
+            }}
+          >
+            {groups.slice(0, 6).map((group) => (
+              <div
+                key={group.id}
+                style={{
+                  padding: "10px 12px",
+                  borderRadius: 12,
+                  background: "#f9fafb",
+                  border: "1px solid #e5e7eb",
+                  fontSize: 12,
+                }}
+              >
+                <div
                   style={{
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",
-                    padding: "8px 12px",
-                    background: "#fafaf9",
-                    borderRadius: 8,
-                    marginBottom: 4,
-                    fontSize: 13
+                    marginBottom: 6,
                   }}
                 >
-                  <span
-                    style={{ color: "#374151", fontWeight: 500 }}
-                  >
-                    {item}
+                  <span style={{ fontWeight: 600, color: "#111827" }}>
+                    {group.label}
                   </span>
-                  <button
+                  <span
+                    className="tag"
                     style={{
-                      background: "none",
-                      border: "none",
-                      cursor: "pointer",
-                      color: "#9ca3af",
-                      fontSize: 18,
-                      lineHeight: 1
+                      background: `${group.color}14`,
+                      color: group.color,
+                      whiteSpace: "nowrap",
                     }}
-                    onClick={() => removeFromWorkout(item)}
                   >
-                    ×
-                  </button>
+                    {group.exercises?.length || 0} exercises
+                  </span>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+                <p
+                  style={{
+                    fontSize: 11,
+                    color: "#4b5563",
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {group.tip || "Open this group to view the full plan."}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -1,16 +1,38 @@
 import { useParams } from "react-router-dom";
-import { ALL_PRODUCTS, SKINCARE_CONCERNS } from "../data/skincareData.js";
 import { useAuth } from "../context/AuthContext.jsx";
 import { TrustBadgeRow } from "../components/common/TrustBadge.jsx";
 import { AuthModal } from "../components/layout/AuthModal.jsx";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useSkincareConcerns } from "../hooks/useFirestoreCollections.js";
+import {
+  buildAllProductsFromConcerns,
+  mapSkincareDocsToConcerns,
+} from "../utils/dataMapping.js";
 
 export function ProductDetail() {
   const { id } = useParams();
-  const product = ALL_PRODUCTS.find((p) => p.id === id);
-  const concern = product ? SKINCARE_CONCERNS[product.concernId] : null;
+  const { items, loading } = useSkincareConcerns();
+
+  const { product, concern } = useMemo(() => {
+    const concernsObj = mapSkincareDocsToConcerns(items || []);
+    const all = buildAllProductsFromConcerns(concernsObj);
+    const found = all.find((p) => p.id === id);
+    const parent = found ? concernsObj[found.concernId] : null;
+    return { product: found || null, concern: parent || null };
+  }, [items, id]);
+
   const { user, addToRoutine } = useAuth();
   const [showAuth, setShowAuth] = useState(false);
+
+  if (loading) {
+    return (
+      <div style={{ paddingTop: 60 }}>
+        <p style={{ fontSize: 14, color: "#9ca3af" }}>
+          Loading product...
+        </p>
+      </div>
+    );
+  }
 
   if (!product || !concern) {
     return (

@@ -1,10 +1,20 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { BLOG_POSTS } from "../data/blogData.js";
+import { useBlog } from "../hooks/useFirestoreCollections.js";
+import { mapBlogDocToPost } from "../utils/dataMapping.js";
 
 export function BlogPost() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const post = BLOG_POSTS.find((p) => String(p.id) === id);
+  const { item, loading } = useBlog(id);
+  const post = mapBlogDocToPost(item);
+
+  if (loading) {
+    return (
+      <div style={{ paddingTop: 60 }}>
+        <p style={{ fontSize: 14, color: "#9ca3af" }}>Loading article...</p>
+      </div>
+    );
+  }
 
   if (!post) {
     return (

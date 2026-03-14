@@ -1,15 +1,25 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
-import { SKINCARE_CONCERNS } from "../data/skincareData.js";
 import { useAuth } from "../context/AuthContext.jsx";
 import { ProductCard } from "../components/skincare/ProductCard.jsx";
 import { AuthModal } from "../components/layout/AuthModal.jsx";
+import { useSkincareConcern } from "../hooks/useFirestoreCollections.js";
+import { mapSkincareDocsToConcerns } from "../utils/dataMapping.js";
 
 export function ConcernDetail() {
   const { id } = useParams();
-  const concern = SKINCARE_CONCERNS[id];
+  const { item, loading } = useSkincareConcern(id);
+  const concern = item ? mapSkincareDocsToConcerns([item])[id] : null;
   const { user, routine, addToRoutine, removeFromRoutine } = useAuth();
   const [showAuth, setShowAuth] = useState(false);
+
+  if (loading) {
+    return (
+      <div style={{ paddingTop: 60 }}>
+        <p style={{ fontSize: 14, color: "#9ca3af" }}>Loading concern...</p>
+      </div>
+    );
+  }
 
   if (!concern) {
     return (
@@ -22,7 +32,7 @@ export function ConcernDetail() {
   }
 
   return (
-    <div className="fade-up" style={{ paddingTop: 32, paddingBottom: 80 }}>
+    <div className="fade-up" style={{ paddingTop: 72, paddingBottom: 80 }}>
       {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
 
       <div
@@ -34,15 +44,12 @@ export function ConcernDetail() {
           padding: "22px 26px",
           background: concern.bg,
           borderRadius: 20,
-          border: `1.5px solid ${concern.color}22`
+          border: `1.5px solid ${concern.color}22`,
         }}
       >
         <span style={{ fontSize: 38 }}>{concern.emoji}</span>
         <div>
-          <h3
-            className="serif"
-            style={{ fontSize: 24, color: "#1a1a1a" }}
-          >
+          <h3 className="serif" style={{ fontSize: 24, color: "#1a1a1a" }}>
             {concern.label}
           </h3>
           <p
@@ -50,7 +57,7 @@ export function ConcernDetail() {
               fontSize: 13,
               color: "#6b7280",
               marginTop: 4,
-              maxWidth: 500
+              maxWidth: 500,
             }}
           >
             {concern.description}
@@ -63,7 +70,7 @@ export function ConcernDetail() {
           display: "grid",
           gridTemplateColumns: "1fr 1fr",
           gap: 16,
-          marginBottom: 28
+          marginBottom: 28,
         }}
       >
         <div
@@ -71,7 +78,7 @@ export function ConcernDetail() {
             padding: "20px 22px",
             background: "white",
             borderRadius: 16,
-            border: "1.5px solid #f0ece8"
+            border: "1.5px solid #f0ece8",
           }}
         >
           <div className="label" style={{ marginBottom: 12 }}>
@@ -87,7 +94,7 @@ export function ConcernDetail() {
                 marginBottom: 7,
                 fontSize: 13,
                 color: "#374151",
-                fontWeight: 500
+                fontWeight: 500,
               }}
             >
               <span
@@ -96,7 +103,7 @@ export function ConcernDetail() {
                   height: 6,
                   borderRadius: "50%",
                   background: concern.color,
-                  flexShrink: 0
+                  flexShrink: 0,
                 }}
               />
               {c}
@@ -108,7 +115,7 @@ export function ConcernDetail() {
             padding: "20px 22px",
             background: "white",
             borderRadius: 16,
-            border: "1.5px solid #f0ece8"
+            border: "1.5px solid #f0ece8",
           }}
         >
           <div className="label" style={{ marginBottom: 12 }}>
@@ -123,7 +130,7 @@ export function ConcernDetail() {
                 color: concern.color,
                 marginRight: 6,
                 marginBottom: 6,
-                display: "inline-block"
+                display: "inline-block",
               }}
             >
               {ing}
@@ -141,7 +148,7 @@ export function ConcernDetail() {
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(auto-fill,minmax(250px,1fr))",
-              gap: 10
+              gap: 10,
             }}
           >
             {prods.map((p) => (
@@ -168,7 +175,7 @@ export function ConcernDetail() {
           display: "grid",
           gridTemplateColumns: "1fr 1fr",
           gap: 16,
-          marginBottom: 24
+          marginBottom: 24,
         }}
       >
         {["AM", "PM"].map((t) => (
@@ -178,7 +185,7 @@ export function ConcernDetail() {
               padding: "22px",
               background: "white",
               borderRadius: 16,
-              border: "1.5px solid #f0ece8"
+              border: "1.5px solid #f0ece8",
             }}
           >
             <div className="label" style={{ marginBottom: 12 }}>
@@ -198,7 +205,7 @@ export function ConcernDetail() {
                     justifyContent: "center",
                     fontSize: 10,
                     fontWeight: 700,
-                    flexShrink: 0
+                    flexShrink: 0,
                   }}
                 >
                   {i + 1}
@@ -216,7 +223,7 @@ export function ConcernDetail() {
           background: `${concern.color}08`,
           borderRadius: 16,
           border: `1.5px solid ${concern.color}20`,
-          marginBottom: 28
+          marginBottom: 28,
         }}
       >
         <div
@@ -234,7 +241,7 @@ export function ConcernDetail() {
               marginBottom: 9,
               fontSize: 13,
               color: "#374151",
-              fontWeight: 500
+              fontWeight: 500,
             }}
           >
             <span
@@ -253,7 +260,7 @@ export function ConcernDetail() {
             padding: "22px",
             background: "white",
             borderRadius: 16,
-            border: "1.5px solid #f0ece8"
+            border: "1.5px solid #f0ece8",
           }}
         >
           <div className="label" style={{ marginBottom: 14 }}>
@@ -268,7 +275,7 @@ export function ConcernDetail() {
                       fontSize: 11,
                       fontWeight: 700,
                       color: "#9ca3af",
-                      marginBottom: 7
+                      marginBottom: 7,
                     }}
                   >
                     {t === "AM" ? "☀️ Morning" : "🌙 Night"}
@@ -284,7 +291,7 @@ export function ConcernDetail() {
                         background: "#fafaf9",
                         borderRadius: 8,
                         marginBottom: 4,
-                        fontSize: 13
+                        fontSize: 13,
                       }}
                     >
                       <span style={{ color: "#374151" }}>{item}</span>
@@ -295,7 +302,7 @@ export function ConcernDetail() {
                           cursor: "pointer",
                           color: "#9ca3af",
                           fontSize: 18,
-                          lineHeight: 1
+                          lineHeight: 1,
                         }}
                         onClick={() => removeFromRoutine(item, t)}
                       >
@@ -311,4 +318,3 @@ export function ConcernDetail() {
     </div>
   );
 }
-

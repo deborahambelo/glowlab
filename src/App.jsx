@@ -1,5 +1,10 @@
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import { useState } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
 import { Navbar } from "./components/layout/Navbar.jsx";
 import { Footer } from "./components/layout/Footer.jsx";
 import { AuthModal } from "./components/layout/AuthModal.jsx";
@@ -14,6 +19,9 @@ import { BlogPost } from "./pages/BlogPost.jsx";
 import { RoutineBuilder } from "./pages/RoutineBuilder.jsx";
 import { Login } from "./pages/Login.jsx";
 import { Dashboard } from "./pages/Dashboard.jsx";
+import React from "react";
+import Admin from "./pages/Admin";
+import RequireAdmin from "./components/RequireAdmin";
 
 function PrivateRoute({ children }) {
   const { user } = useAuth();
@@ -32,10 +40,11 @@ function AppShell() {
       <Navbar onAuthClick={() => setShowAuth(true)} />
       <main
         style={{
-          paddingTop: 72,
+          paddingTop: 80,
+          paddingBottom: 100,
           maxWidth: 1200,
           margin: "0 auto",
-          padding: "0 24px"
+          padding: "0 24px",
         }}
       >
         <Routes>
@@ -64,6 +73,16 @@ function AppShell() {
               </PrivateRoute>
             }
           />
+
+          {/* ✅ ADD THIS - Admin route was missing */}
+          <Route
+            path="/admin"
+            element={
+              <RequireAdmin>
+                <Admin />
+              </RequireAdmin>
+            }
+          />
         </Routes>
       </main>
       <Footer />
@@ -78,4 +97,3 @@ export default function App() {
     </AuthProvider>
   );
 }
-

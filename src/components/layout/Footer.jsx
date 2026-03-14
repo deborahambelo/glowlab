@@ -8,7 +8,6 @@ export function Footer() {
         fontSize: 13, // slightly bigger
         color: "#4b5563", // darker gray for better readability
         fontFamily: "'DM Sans',sans-serif",
-        marginTop: 40,
       }}
     >
       🌷 glowlab — designed by{" "}
