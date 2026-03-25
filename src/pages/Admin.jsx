@@ -1,4 +1,4 @@
-import { onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged, signOut } from "firebase/auth";
 import React, { useState, useEffect, useMemo } from "react";
 import {
   addDoc,
@@ -50,6 +50,26 @@ const initialSkincareConcern = {
   routine: { AM: [], PM: [], tips: [] },
 };
 
+// ─── Admin Navbar ──────────────────────────────────────────────────────────────
+function AdminNavbar({ email, onLogout }) {
+  return (
+    <nav className="admin-navbar">
+      <div className="admin-navbar-inner">
+        <div className="admin-navbar-brand">
+          <span className="admin-navbar-logo">⚙️</span>
+          <span className="admin-navbar-title">GlowLab Admin</span>
+        </div>
+        <div className="admin-navbar-right">
+          <span className="admin-navbar-email">{email}</span>
+          <button className="admin-navbar-logout" onClick={onLogout}>
+            Sign Out
+          </button>
+        </div>
+      </div>
+    </nav>
+  );
+}
+
 function Admin() {
   const [currentUser, setCurrentUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -94,10 +114,18 @@ function Admin() {
 
   useEffect(() => {
     if (!authLoading && (!currentUser || !isAdmin))
-      navigate("/", { replace: true });
+      navigate("/login", { replace: true });
   }, [authLoading, currentUser, isAdmin, navigate]);
 
-  // Real-time subscriptions
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      navigate("/login", { replace: true });
+    } catch {
+      setFeedback({ type: "error", message: "Failed to sign out." });
+    }
+  };
+
   useEffect(() => {
     if (!currentUser || !isAdmin) return;
     setSubLoading(true);
@@ -776,72 +804,72 @@ function Admin() {
     );
 
   return (
-    <div className="admin-page">
-      <div className="admin-container">
-        <header className="admin-header">
-          <div>
-            <h1>GlowLab Admin Dashboard</h1>
-            <p>
-              Manage blog posts, skincare concerns, and fitness groups in real
-              time.
-            </p>
-          </div>
-          <div className="admin-user-badge">
-            <div className="label">Signed in as</div>
-            <div className="email">{currentUser?.email}</div>
-            <div className="admin-pill">Admin</div>
-          </div>
-        </header>
+    // Wrap in a full-page container that won't inherit customer layout styles
+    <div className="admin-root">
+      <AdminNavbar email={currentUser?.email} onLogout={handleLogout} />
 
-        {feedback && (
-          <div className={`admin-feedback ${feedback.type}`}>
-            <span>{feedback.message}</span>
-            <button onClick={() => setFeedback(null)}>Close</button>
-          </div>
-        )}
+      <div className="admin-page">
+        <div className="admin-container">
+          <header className="admin-header">
+            <div>
+              <h1>GlowLab Admin Dashboard</h1>
+              <p>
+                Manage blog posts, skincare concerns, and fitness groups in real
+                time.
+              </p>
+            </div>
+          </header>
 
-        <section className="admin-section">
-          <div className="admin-tab-bar">
-            <div className="admin-tabs">
+          {feedback && (
+            <div className={`admin-feedback ${feedback.type}`}>
+              <span>{feedback.message}</span>
+              <button onClick={() => setFeedback(null)}>Close</button>
+            </div>
+          )}
+
+          <section className="admin-section">
+            <div className="admin-tab-bar">
+              <div className="admin-tabs">
+                <button
+                  className={`admin-tab${
+                    activeTab === TABS.BLOGS ? " active" : ""
+                  }`}
+                  onClick={() => setActiveTab(TABS.BLOGS)}
+                >
+                  Blog Posts
+                </button>
+                <button
+                  className={`admin-tab${
+                    activeTab === TABS.FITNESS ? " active" : ""
+                  }`}
+                  onClick={() => setActiveTab(TABS.FITNESS)}
+                >
+                  Fitness Groups
+                </button>
+                <button
+                  className={`admin-tab${
+                    activeTab === TABS.SKINCARE ? " active" : ""
+                  }`}
+                  onClick={() => setActiveTab(TABS.SKINCARE)}
+                >
+                  Skincare Concerns
+                </button>
+              </div>
               <button
-                className={`admin-tab${
-                  activeTab === TABS.BLOGS ? " active" : ""
-                }`}
-                onClick={() => setActiveTab(TABS.BLOGS)}
+                className="admin-add-btn"
+                onClick={() => openAddModal(activeTab)}
               >
-                Blog Posts
-              </button>
-              <button
-                className={`admin-tab${
-                  activeTab === TABS.FITNESS ? " active" : ""
-                }`}
-                onClick={() => setActiveTab(TABS.FITNESS)}
-              >
-                Fitness Groups
-              </button>
-              <button
-                className={`admin-tab${
-                  activeTab === TABS.SKINCARE ? " active" : ""
-                }`}
-                onClick={() => setActiveTab(TABS.SKINCARE)}
-              >
-                Skincare Concerns
+                + Add New
               </button>
             </div>
-            <button
-              className="admin-add-btn"
-              onClick={() => openAddModal(activeTab)}
-            >
-              + Add New
-            </button>
-          </div>
 
-          {subLoading ? (
-            <div className="admin-loading">Loading data...</div>
-          ) : (
-            renderTable()
-          )}
-        </section>
+            {subLoading ? (
+              <div className="admin-loading">Loading data...</div>
+            ) : (
+              renderTable()
+            )}
+          </section>
+        </div>
       </div>
 
       {isModalOpen && (

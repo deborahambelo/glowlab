@@ -73,16 +73,6 @@ function AppShell() {
               </PrivateRoute>
             }
           />
-
-          {/* ✅ ADD THIS - Admin route was missing */}
-          <Route
-            path="/admin"
-            element={
-              <RequireAdmin>
-                <Admin />
-              </RequireAdmin>
-            }
-          />
         </Routes>
       </main>
       <Footer />
@@ -90,10 +80,22 @@ function AppShell() {
   );
 }
 
+function AdminShell() {
+  return (
+    <RequireAdmin>
+      <Admin />
+    </RequireAdmin>
+  );
+}
+
 export default function App() {
   return (
     <AuthProvider>
-      <AppShell />
+      <Routes>
+        <Route path="/admin" element={<AdminShell />} />
+
+        <Route path="/*" element={<AppShell />} />
+      </Routes>
     </AuthProvider>
   );
 }
